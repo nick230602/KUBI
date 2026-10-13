@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body><pre id="progress">Preparando…</pre><script type="module">
+import {buildDesign} from './js/design.js';
+window.design=await buildDesign();window.project=window.design.json;
+window.compile=async()=>{
+ const {Compiler}=await import('./js/mindar/mindar-image.prod.js');
+ const image=new Image();image.src='assets/marker/target.png';await image.decode();
+ const compiler=new Compiler();
+ const list=await compiler.compileImageTargets([image],p=>{document.getElementById('progress').textContent='Compilando '+p.toFixed(1)+'%';});
+ window.compiled=Array.from(new Uint8Array(compiler.exportData()));
+ return list.map(l=>({width:l.targetImage.width,height:l.targetImage.height,features:l.matchingData.map(d=>d.maximaPoints.length+d.minimaPoints.length)}));
+};
+</script></body></html>
