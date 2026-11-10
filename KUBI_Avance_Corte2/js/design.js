@@ -61,22 +61,7 @@ export async function buildDesign(){
   const key=new THREE.DirectionalLight(0xffffff,3.2);key.position.set(-2,4,3);scene.add(key);
   const fill=new THREE.DirectionalLight(0xc4dfff,1.5);fill.position.set(3,2,-2);scene.add(fill);
   const camera=new THREE.PerspectiveCamera(42,1.6,.01,50);camera.position.set(0,1.55,2.55);camera.lookAt(0,.23,0);
-  const source=`player.imageTargets = [{arContent: this.getObjectByName('ARContent')}];
-player.kubi = { root: this.getObjectByName('ARContent'), angle: 0, paused: false };
-function update(event) {
-  var t = event.time / 1000;
-  if (player.kubi.paused) return;
-  var root = player.kubi.root;
-  root.rotation.y = player.kubi.angle;
-  root.children.forEach(function(o) {
-    if (o.userData.kind === undefined) return;
-    var i = o.userData.kind;
-    o.position.y = o.userData.baseY + Math.sin(t*1.8+i)*.012;
-    o.rotation.z = Math.sin(t*1.5+i)*.025;
-    var arm = o.getObjectByName('Brazo derecho');
-    if (arm) arm.rotation.z = -.18 + Math.sin(t*2+i)*.22;
-  });
-}`;
+  const finalSource=await fetch(new URL('./editor-animation.js',import.meta.url)).then(response=>{if(!response.ok)throw new Error('No se pudo cargar la animación');return response.text();});
   scene.updateMatrixWorld(true);camera.updateMatrixWorld(true);
-  return {scene,camera,json:{metadata:{type:'App',generator:'Three.js Editor'},project:{renderer:'WebGLRenderer',shadows:false,toneMapping:THREE.ACESFilmicToneMapping,toneMappingExposure:1},camera:camera.toJSON(),controls:{center:[0,.23,0]},scene:scene.toJSON(),scripts:{[scene.uuid]:[{name:'KUBI - Registro AR y animación',source}]},history:{undos:[],redos:[]}}};
+  return {scene,camera,json:{metadata:{type:'App',generator:'Three.js Editor'},project:{renderer:'WebGLRenderer',shadows:false,toneMapping:THREE.ACESFilmicToneMapping,toneMappingExposure:1},camera:camera.toJSON(),controls:{center:[0,.23,0]},scene:scene.toJSON(),scripts:{[scene.uuid]:[{name:'KUBI - Registro AR, animación y reacción',source:finalSource}]},history:{undos:[],redos:[]}}};
 }

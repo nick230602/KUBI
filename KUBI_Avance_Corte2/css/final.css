@@ -1,0 +1,14 @@
+/* Se conserva la identidad existente. Accesos y seguimiento del corte final. */
+.secondary{display:flex;align-items:center;gap:24px;background:transparent;border:1px solid #9670ef;color:#8460c7;border-radius:12px;font-weight:700;padding:17px 24px;margin:4px 0 0}
+.secondary:disabled{opacity:.5}.primary,.secondary{min-height:54px}.primary:hover,.secondary:hover{opacity:.88}
+#ar-container{isolation:isolate}#ar-container video{z-index:0}#ar-container canvas{z-index:1}#preview-container canvas{display:block}
+#reaction{position:absolute;top:145px;left:24px;z-index:12;color:#11172a;background:#f8f2e8f2;border-radius:14px;padding:12px 18px;box-shadow:0 5px 24px #0002;border-left:4px solid #ff5277;font-size:13px;font-weight:700;max-width:calc(100vw - 48px)}
+#reaction[data-flavor="1"]{border-left-color:#ffca55}#reaction[data-flavor="2"]{border-left-color:#9670ef}
+#face-canvas-wrap{isolation:isolate;background:#eee4d7;height:min(45svh,340px);min-height:210px;position:relative;overflow:hidden}
+#face-canvas-wrap video{z-index:0;display:block}#face-canvas-wrap canvas{z-index:1;display:block;background:transparent}
+#face-loading{position:absolute;inset:0;display:grid;place-items:center;z-index:4;background:#eee4d7;color:#616273;font-size:13px}
+#face-result{position:absolute;left:12px;right:12px;bottom:12px;z-index:3;padding:10px 14px;border-radius:12px;background:#11172ae8;color:#fff;font-size:12px;font-weight:700;text-align:center;pointer-events:none}
+.face-dialog{width:min(530px,94vw);padding:27px;max-height:94svh}.face-dialog h2{margin:12px 0 18px}.face-choice{margin:13px 0;gap:8px}.face-choice button{flex:1;padding:10px 8px;font-size:12px}.face-choice button[aria-pressed="true"]{border:2px solid #9670ef;background:#eee5fc;padding:9px 7px}.face-dialog #face-message{font-size:12px;line-height:1.5;margin:8px 0}.face-dialog .face-help{font-size:10px;line-height:1.4;margin:8px 0 0}
+#face-retry{background:#11172a;color:white;border:0;border-radius:10px;padding:12px 16px;margin-top:14px}
+@media(max-width:780px){#welcome{padding-top:18px}.welcome-grid{margin-top:18px}.primary,.secondary{padding:16px 19px;width:100%;justify-content:space-between}.face-dialog{padding:22px}.face-dialog h2{font-size:28px}#face-canvas-wrap{height:36svh}.bottom-bar{padding:12px}.bottom-bar nav button{padding:11px 6px}.extras{gap:18px}.extras button{min-height:30px}#reaction{top:140px}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}

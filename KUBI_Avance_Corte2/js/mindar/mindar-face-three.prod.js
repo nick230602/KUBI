@@ -18,15 +18,20 @@ class C {
     this.container = a, this.ui = new S({ uiLoading: t, uiScanning: o, uiError: n }), this.controller = new R({
       filterMinCF: e,
       filterBeta: h
-    }), this.disableFaceMirror = l, this.scene = new m(), this.cssScene = new m(), this.renderer = new g({ antialias: !0, alpha: !0 }), this.cssRenderer = new E({ antialias: !0 }), this.renderer.outputEncoding = y, this.renderer.setPixelRatio(window.devicePixelRatio), this.camera = new w(), this.userDeviceId = s, this.environmentDeviceId = c, this.anchors = [], this.faceMeshes = [], this.latestEstimate = null, this.container.appendChild(this.renderer.domElement), this.container.appendChild(this.cssRenderer.domElement), this.shouldFaceUser = !0, window.addEventListener("resize", this._resize.bind(this));
+    }), this.disableFaceMirror = l, this.scene = new m(), this.cssScene = new m(), this.renderer = new g({ antialias: !0, alpha: !0 }), this.cssRenderer = new E({ antialias: !0 }), this.renderer.outputEncoding = y, this.renderer.setPixelRatio(window.devicePixelRatio), this.camera = new w(), this.userDeviceId = s, this.environmentDeviceId = c, this.anchors = [], this.faceMeshes = [], this.latestEstimate = null, this.container.appendChild(this.renderer.domElement), this.container.appendChild(this.cssRenderer.domElement), this.shouldFaceUser = !0, this._boundResize=this._resize.bind(this), window.addEventListener("resize", this._boundResize);
   }
   async start() {
     this.ui.showLoading(), await this._startVideo(), await this._startAR(), this.ui.hideLoading();
   }
   stop() {
-    this.video.srcObject.getTracks().forEach(function(t) {
-      t.stop();
-    }), this.video.remove(), this.controller.stopProcessVideo();
+    this.video?.srcObject?.getTracks().forEach(track=>track.stop());
+    this.video?.remove();this.controller.stopProcessVideo();
+  }
+  dispose() {
+    if(this._disposed)return;this._disposed=true;
+    this.stop();this.renderer.setAnimationLoop(null);this.renderer.dispose();
+    this.renderer.domElement.remove();this.cssRenderer.domElement.remove();
+    window.removeEventListener('resize',this._boundResize);
   }
   switchCamera() {
     this.shouldFaceUser = !this.shouldFaceUser, this.stop(), this.start();
@@ -52,7 +57,7 @@ class C {
   }
   _startVideo() {
     return new Promise((a, t) => {
-      if (this.video = document.createElement("video"), this.video.setAttribute("autoplay", ""), this.video.setAttribute("muted", ""), this.video.setAttribute("playsinline", ""), this.video.style.position = "absolute", this.video.style.top = "0px", this.video.style.left = "0px", this.video.style.zIndex = "-2", this.container.appendChild(this.video), !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (this.video = document.createElement("video"), this.video.setAttribute("autoplay", ""), this.video.setAttribute("muted", ""), this.video.setAttribute("playsinline", ""), this.video.muted=true, this.video.playsInline=true, this.video.style.position = "absolute", this.video.style.top = "0px", this.video.style.left = "0px", this.video.style.zIndex = "0", this.container.appendChild(this.video), !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         this.ui.showCompatibility(), t();
         return;
       }
@@ -60,17 +65,18 @@ class C {
         audio: !1,
         video: {}
       };
-      this.shouldFaceUser ? this.userDeviceId ? o.video.deviceId = { exact: this.userDeviceId } : o.video.facingMode = "user" : this.environmentDeviceId ? o.video.deviceId = { exact: this.environmentDeviceId } : o.video.facingMode = "environment", navigator.mediaDevices.getUserMedia(o).then((n) => {
+      this.shouldFaceUser ? this.userDeviceId ? o.video.deviceId = { exact: this.userDeviceId } : o.video.facingMode = "user" : this.environmentDeviceId ? o.video.deviceId = { exact: this.environmentDeviceId } : o.video.facingMode = "environment", navigator.mediaDevices.getUserMedia(o).then((n) => { if(this._disposed){n.getTracks().forEach(track=>track.stop());t(new DOMException("Cancelado","AbortError"));return;}
         this.video.addEventListener("loadedmetadata", () => {
-          this.video.setAttribute("width", this.video.videoWidth), this.video.setAttribute("height", this.video.videoHeight), a();
+          this.video.setAttribute("width", this.video.videoWidth), this.video.setAttribute("height", this.video.videoHeight), this.video.play().then(a).catch(t);
         }), this.video.srcObject = n;
       }).catch((n) => {
-        console.log("getUserMedia error", n), t();
+        console.log("getUserMedia error", n), t(n);
       });
     });
   }
   _startAR() {
     return new Promise(async (a, t) => {
+      try {
       const o = this.video;
       this.container, this.controller.onUpdate = ({ hasFace: e, estimateResult: h }) => {
         for (let s = 0; s < this.anchors.length; s++)
@@ -113,12 +119,13 @@ class C {
           this.latestEstimate = null;
       }, this._resize();
       const n = this.shouldFaceUser && !this.disableFaceMirror;
-      await this.controller.setup(n), await this.controller.dummyRun(o), this._resize(), this.controller.processVideo(o), a();
+      await this.controller.setup(n); if(this._disposed){a();return;} await this.controller.dummyRun(o); if(this._disposed){a();return;} this._resize(); this.controller.processVideo(o); a();
+      } catch(error) { t(error); }
     });
   }
   _resize() {
     const { renderer: a, cssRenderer: t, camera: o, container: n, video: e } = this;
-    if (!e)
+    if (!e || this._disposed || !e.videoWidth)
       return;
     {
       this.video.setAttribute("width", this.video.videoWidth), this.video.setAttribute("height", this.video.videoHeight), this.controller.onInputResized(e);

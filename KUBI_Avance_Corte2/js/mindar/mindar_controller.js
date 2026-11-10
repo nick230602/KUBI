@@ -63,8 +63,11 @@ class MindARController {
         const { scene, camera, renderer } = this.mindar;
 
         // Anchora el contenido AR de cada ImageTarget sobre el target.
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setClearColor(0x000000, 0);
+        renderer.domElement.style.zIndex = '1';
+        this.mindar.cssRenderer.domElement.style.zIndex = '2';
+        this.mindar.cssRenderer.domElement.style.pointerEvents = 'none';
 
         for (let i = 0; i < imageTargets.length; i++) {
             const it = imageTargets[i];
@@ -118,10 +121,8 @@ class MindARController {
         try {
             await this.mindar.start();
         } catch (e) {
-            this.mindar = null;
-            this.started = false;
-            const detail = (e && e.message) ? `: ${e.message}` : '. Comprobá que la cámara esté disponible y permitas el acceso';
-            throw new Error(`No se pudo iniciar la cámara AR${detail}`);
+            this.stop();
+            throw e || new Error('No se pudo iniciar la cámara AR. Revisa el permiso de cámara del navegador.');
         }
 
         renderer.setAnimationLoop(() => {
@@ -138,7 +139,10 @@ class MindARController {
         if (this.mindar.renderer?.setAnimationLoop) {
             this.mindar.renderer.setAnimationLoop(null);
         }
-        this.mindar.stop();
+        try { this.mindar.stop(); } catch (_) {
+            this.mindar.video?.srcObject?.getTracks().forEach(track=>track.stop());
+            this.mindar.controller?.stopProcessVideo();
+        }
         this.mindar.renderer?.dispose();
         this.container.replaceChildren();
         this.mindar = null;
@@ -201,6 +205,7 @@ class MindARController {
     }
 
     onArClick(ev) {
+        if (ev.target?.closest?.('button, dialog, nav, header, .bottom-bar')) return;
         const mindar = this.mindar;
         if (!mindar) return;
 
